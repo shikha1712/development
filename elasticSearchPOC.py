@@ -10,6 +10,7 @@ import os
 import glob
 import pandas as pd
 import PyPDF2
+import json
 
 os.chdir('C:/Users/shikha agrawal/Documents/HRDocument')
 files = glob.glob("*.*")
@@ -21,19 +22,20 @@ for document in files:
     
 def extractPDFFiles(files) :
     this_loc = 1
-    df = pd.DataFrame(columns = ("name" , "content"))
+    df = pd.DataFrame(columns = ("pageNumber" , "name" , "content"))
     
     for file in files:
         pdffileObj = open(file , 'rb')
         pdfrender = PyPDF2.PdfFileReader(pdffileObj)
         n_pages = pdfrender.numPages
-        this_doc = ''
+       
         for i in range(n_pages):
+            this_doc = ''
             pageObj = pdfrender.getPage(i)
             this_text = pageObj.extractText()
             this_doc += this_text
-        df.loc[this_loc] = file , this_doc
-        this_loc = this_loc +1
+            df.loc[this_loc] = i ,file , this_doc
+            this_loc = this_loc +1
     return df
 
 
@@ -44,9 +46,15 @@ df.head()
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}], timeout=90)
 col_names = df.columns
 
-for row_number in range(df.shape[0]) : 
+for row_number in range(df.shape[0]) :
     body = dict([(name , str(df.iloc[row_number][name])) for name in col_names])
     print(body)
-    es.index(index = 'data_science'  , doc_type = 'books' , body = body)
+    data = {}
+    data['pageNumber'] = body.get('pageNumber')
+    data['name'] =  body.get('name')
+    data['content'] =  body.get('content')
+    
+    json_data = json.dumps(data)
+    es.index(index = 'data_science'  , doc_type = 'books' , body = json_data)
 
     
