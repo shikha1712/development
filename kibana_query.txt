@@ -1,0 +1,333 @@
+GET data_science/books/_search/
+{
+  "_source": "name", 
+    "query" : {
+        "match_phrase": {
+          "content": "container, kubernetes still requires you to create PODs."
+        }
+    }
+}
+
+GET data_science/_search/
+{
+  "_source": "name", 
+    "query" : {
+        "match_phrase": {
+          "content": "container, kubernetes still requires you to create PODs."
+        }
+    }
+}
+
+
+GET data_science/_search
+{
+  "_source": "name", 
+    "query" : {
+        "match_phrase": {
+          "content": "kubernetes"
+        }
+    }
+}
+
+DELETE data_science
+
+PUT _ingest/pipeline/attachment
+{
+  "description": "Field for processing file attachement",
+  "processors": [
+    {"attachment" : {
+      "field" : "data"
+    }}
+  ]
+  
+}
+
+
+PUT /ingest_demo/_doc/42?pipeline=attachment
+{
+  "data": "SGVyZSdzIHNvbWUgcGxhaW4gdGV4dC4="
+}
+
+
+POST /ingest_demo/_search
+{
+   "query": {
+      "match": {
+         "attachment.content": {      
+            "query": "some plain text"
+         }
+      }
+   }
+}
+
+
+DELETE example
+
+GET example/_search
+{
+  "query": {
+    "match_all": {}
+  }
+}
+
+
+
+
+GET example
+
+GET example/_search
+{
+
+    "query": {
+        "match_all": {}
+    }
+}
+
+
+POST /example/_search
+{
+   "query": {
+      "match": {
+         "name": {      
+            "term": "Steve"
+         }
+      }
+   }
+}
+
+
+
+POST /allsearchindex/user
+{
+  "mapping": {
+    "user": {
+      "_all": {
+        "enabled": true   
+      }
+    }
+  }
+}
+
+
+PUT /allsearchindex/user/1      
+{
+  "first_name":    "John",
+  "last_name":     "Smith",
+  "date_of_birth": "1970-10-24"
+}
+
+
+
+GET /allsearchindex/_search
+{
+  "query": {
+    "match": {
+      "_all": "john smith 1970"
+    }
+  }
+}
+
+DELETE allindexdemo
+
+
+PUT /allindexdemo
+{
+  "mappings": {
+  
+      "properties": {
+          "first_name": {
+            "type":    "text",
+            "copy_to": "full_name" 
+          },
+          "last_name": {
+            "type":    "text",
+            "copy_to": "full_name" 
+          },
+          
+          "full_name": {
+            "type":    "text"
+          }
+      
+    }
+  }
+}
+
+
+PUT /allindexdemo/_doc/1
+{
+  "first_name": "John",
+  "last_name": "Smith"
+}
+
+
+GET allindexdemo/_doc/_search
+{
+  "query": {
+    "match": {
+      "full_name": "John Smith"
+    }
+  }
+}
+
+
+
+PUT /allindexdemo1
+{
+  "mappings": {
+  
+      "properties": {
+          "first_name": {
+            "type":    "text",
+            "copy_to": "full_name" 
+          },
+          "last_name": {
+            "type":    "text",
+            "copy_to": "full_name" 
+          },
+         "date_of_birth": {
+            "type":    "text",
+            "copy_to": "full_name" 
+          },
+          "full_name": {
+            "type":    "text"
+          }
+      
+    }
+  }
+}
+
+
+PUT /allindexdemo1/_doc/1
+{
+  "first_name": "John",
+  "last_name": "Smith",
+   "date_of_birth": "1970-10-24"
+}
+
+PUT /allindexdemo1/_doc/2
+{
+  "first_name": "xxx",
+  "last_name": "yyy",
+   "date_of_birth": "1970-10-24"
+}
+
+PUT /allindexdemo1/_doc/3
+{
+  "first_name": "ert",
+  "last_name": "hgf",
+   "date_of_birth": "1970-10-24"
+}
+
+
+GET allindexdemo1/_doc/_search
+{
+  "query": {
+    "match": {
+      "full_name": "xxx 1970 Smith"
+    }
+  }
+}
+
+GET allindexdemo1/_doc/_search
+{
+  "query": {
+    "query_string": {
+      "query": "10"
+    }
+  }
+}
+
+
+
+GET data_science/books/_search/
+{
+  "_source": "name", 
+    "query" : {
+        "match_phrase": {
+          "content": "container, kubernetes still requires you to create PODs."
+        }
+    }
+}
+
+GET data_science/books/_search
+{
+  "_source": "content", 
+  "query": {
+    "fuzzy": {
+      "content": {
+        "value": "container, kubernetes still requires you to create PODs."
+      }
+    }
+  }
+}
+
+GET data_science/books/_search
+{
+  "query":
+{
+  "span_near": {
+    "clauses": [
+      {
+        "span_multi": {
+          "match": {
+            "fuzzy": {
+              "content": {
+                "fuzziness": "2",
+                "value": "kernetes"
+              }
+            }
+          }
+        }
+      },
+      {
+        "span_multi": {
+          "match": {
+            "fuzzy": {
+              "content": {
+                "fuzziness": "2",
+                "value": "siill"
+              }
+            }
+          }
+        }
+      },
+       {
+        "span_multi": {
+          "match": {
+            "fuzzy": {
+              "content": {
+                "fuzziness": "2",
+                "value": "requires"
+              }
+            }
+          }
+        }
+      },
+       {
+        "span_multi": {
+          "match": {
+            "fuzzy": {
+              "content": {
+                "fuzziness": "2",
+                "value": "you"
+              }
+            }
+          }
+        }
+      }
+      
+      
+    ],
+    "slop": 1,
+    "in_order": "true"
+  }
+}
+}
+
+
+
+
+
+
+
+
